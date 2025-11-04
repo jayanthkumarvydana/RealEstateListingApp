@@ -10,4 +10,7 @@
 
     <color name="evergreen">#31473A</color>
     <color name="misty_mint">#EDF4F2</color>
+
+    <color name="Green">#adc178</color>
+    <color name="Brown">#a98467</color>
 </resources>

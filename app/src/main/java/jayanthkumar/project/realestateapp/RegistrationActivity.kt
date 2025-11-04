@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
@@ -40,30 +43,37 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 
-class LoginActivity : ComponentActivity() {
+class RegistrationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-            LoginActivityScreen()
+            CreateAccountActivityScreen()
         }
     }
 }
 
 
 @Composable
-fun LoginActivityScreen() {
+fun CreateAccountActivityScreen() {
+
+    var jsfullname by remember { mutableStateOf("") }
+    var jsgraduation by remember { mutableStateOf("") }
     var jsemail by remember { mutableStateOf("") }
     var jspassword by remember { mutableStateOf("") }
+    var jsconfirmpassword by remember { mutableStateOf("") }
 
     val context = LocalContext.current as Activity
+
 
     Column(
         modifier = Modifier
@@ -98,6 +108,76 @@ fun LoginActivityScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                value = jsfullname,
+                onValueChange = { jsfullname = it },
+                label = { Text("Enter FullName") },
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = Color.White,
+                ),
+                shape = RoundedCornerShape(32.dp),
+                leadingIcon = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle, // Replace with desired icon
+                            contentDescription = "Email Icon"
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(
+                            modifier = Modifier
+                                .width(3.dp) // Width of the line
+                                .height(24.dp) // Adjust height as needed
+                                .background(Color.Gray) // Color of the line
+                        )
+                    }
+                },
+            )
+
+            Spacer(modifier = Modifier.height(0.dp))
+
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                value = jsgraduation,
+                onValueChange = { jsgraduation = it },
+                label = { Text("Enter Graduation") },
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = Color.White,
+                ),
+                shape = RoundedCornerShape(32.dp),
+                leadingIcon = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Image(
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height(24.dp),
+                            painter = painterResource(id = R.drawable.ic_graduate),
+                            contentDescription = "Real Estate",
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(
+                            modifier = Modifier
+                                .width(3.dp) // Width of the line
+                                .height(24.dp) // Adjust height as needed
+                                .background(Color.Gray) // Color of the line
+                        )
+                    }
+                },
+            )
+
+            Spacer(modifier = Modifier.height(0.dp))
+
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -129,7 +209,7 @@ fun LoginActivityScreen() {
                 },
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(0.dp))
 
             OutlinedTextField(
                 modifier = Modifier
@@ -165,10 +245,7 @@ fun LoginActivityScreen() {
             Spacer(modifier = Modifier.height(46.dp))
 
             Button(
-                onClick = {
-//                    context.startActivity(Intent(context, JobSeekerHomeActivity::class.java))
-//                    context.finish()
-                },
+                onClick = { /* Handle login */ },
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally),
@@ -187,7 +264,7 @@ fun LoginActivityScreen() {
                 )
             ) {
                 Text(
-                    text = "Login",
+                    text = "Register",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 )
             }
@@ -198,15 +275,15 @@ fun LoginActivityScreen() {
         Row(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(text = "I'm new to this app !", fontSize = 14.sp)
+            Text(text = "I'm an old user !", fontSize = 14.sp)
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Join Now",
+                text = "Login Now",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black, // Blue text color for "Sign Up"
                 modifier = Modifier.clickable {
-                    context.startActivity(Intent(context, RegistrationActivity::class.java))
+                    context.startActivity(Intent(context, LoginActivity::class.java))
                     context.finish()
                 }
             )
@@ -221,7 +298,6 @@ fun LoginActivityScreen() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginActivityScreenPreview() {
-    LoginActivityScreen()
+fun CreateAccountActivityScreenPreview() {
+    CreateAccountActivityScreen()
 }
-
