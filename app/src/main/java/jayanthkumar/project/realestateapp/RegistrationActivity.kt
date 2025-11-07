@@ -162,7 +162,7 @@ fun CreateAccountActivityScreen() {
                             modifier = Modifier
                                 .width(24.dp)
                                 .height(24.dp),
-                            painter = painterResource(id = R.drawable.ic_graduate),
+                            painter = painterResource(id = R.drawable.ic_realestate),
                             contentDescription = "Real Estate",
                         )
                         Spacer(modifier = Modifier.width(6.dp))
