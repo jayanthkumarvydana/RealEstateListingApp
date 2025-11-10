@@ -1,8 +1,10 @@
 package jayanthkumar.project.realestateapp
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -51,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.database.FirebaseDatabase
 
 
 class RegistrationActivity : ComponentActivity() {
@@ -66,11 +69,14 @@ class RegistrationActivity : ComponentActivity() {
 @Composable
 fun CreateAccountActivityScreen() {
 
-    var jsfullname by remember { mutableStateOf("") }
-    var jsgraduation by remember { mutableStateOf("") }
-    var jsemail by remember { mutableStateOf("") }
-    var jspassword by remember { mutableStateOf("") }
-    var jsconfirmpassword by remember { mutableStateOf("") }
+    var fullname by remember { mutableStateOf("") }
+    var zipCode by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmpassword by remember { mutableStateOf("") }
+
+    var errorMessage by remember { mutableStateOf("") }
+
 
     val context = LocalContext.current as Activity
 
@@ -113,8 +119,8 @@ fun CreateAccountActivityScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                value = jsfullname,
-                onValueChange = { jsfullname = it },
+                value = fullname,
+                onValueChange = { fullname = it },
                 label = { Text("Enter FullName") },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -146,9 +152,9 @@ fun CreateAccountActivityScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                value = jsgraduation,
-                onValueChange = { jsgraduation = it },
-                label = { Text("Enter Graduation") },
+                value = zipCode,
+                onValueChange = { zipCode = it },
+                label = { Text("Enter Zip Code") },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     focusedContainerColor = Color.White,
@@ -182,8 +188,8 @@ fun CreateAccountActivityScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                value = jsemail,
-                onValueChange = { jsemail = it },
+                value = email,
+                onValueChange = { email = it },
                 label = { Text("Enter Email") },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -215,8 +221,8 @@ fun CreateAccountActivityScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                value = jspassword,
-                onValueChange = { jspassword = it },
+                value = password,
+                onValueChange = { password = it },
                 label = { Text("Enter Password") },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -242,10 +248,50 @@ fun CreateAccountActivityScreen() {
                 },
             )
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(46.dp))
 
             Button(
-                onClick = { /* Handle login */ },
+                onClick = {
+                    when {
+                        fullname.isBlank() -> {
+                            errorMessage = "Please enter your full name."
+                        }
+
+                        zipCode.isBlank() -> {
+                            errorMessage = "Please enter your Zipcode."
+                        }
+
+                        email.isBlank() -> {
+                            errorMessage = "Please enter your email."
+                        }
+
+                        password.isBlank() -> {
+                            errorMessage = "Please enter your password."
+                        }
+
+
+                        else -> {
+                            errorMessage = ""
+                            val userData = UserData(
+                                fullName = fullname,
+                                email = email,
+                                zipCode = zipCode,
+                                password = password
+                                )
+                            saveUserData(userData,context)
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally),
@@ -301,3 +347,38 @@ fun CreateAccountActivityScreen() {
 fun CreateAccountActivityScreenPreview() {
     CreateAccountActivityScreen()
 }
+
+private fun saveUserData(userData: UserData,context: Context){
+    val db = FirebaseDatabase.getInstance()
+    val ref = db.getReference("UserData")
+    ref.child(userData.email.replace(".", ",")).setValue(userData)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+
+                Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
+                context.startActivity(Intent(context, LoginActivity::class.java))
+                (context as Activity).finish()
+            } else {
+                Toast.makeText(
+                    context,
+                    "User Registration Failed: ${task.exception?.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        .addOnFailureListener { exception ->
+            Toast.makeText(
+                context,
+                "User Registration Failed: ${exception.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+}
+
+data class UserData
+    (
+    var fullName: String = "",
+    var email: String ="",
+    var zipCode: String ="",
+    var password: String ="",
+)

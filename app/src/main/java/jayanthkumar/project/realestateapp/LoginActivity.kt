@@ -1,11 +1,12 @@
 package jayanthkumar.project.realestateapp
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.database.FirebaseDatabase
 
 
 class LoginActivity : ComponentActivity() {
@@ -60,8 +62,11 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginActivityScreen() {
-    var jsemail by remember { mutableStateOf("") }
-    var jspassword by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    var errorMessage by remember { mutableStateOf("") }
+
 
     val context = LocalContext.current as Activity
 
@@ -102,8 +107,8 @@ fun LoginActivityScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                value = jsemail,
-                onValueChange = { jsemail = it },
+                value = email,
+                onValueChange = { email = it },
                 label = { Text("Enter Email") },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -135,8 +140,8 @@ fun LoginActivityScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
-                value = jspassword,
-                onValueChange = { jspassword = it },
+                value = password,
+                onValueChange = { password = it },
                 label = { Text("Enter Password") },
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -162,12 +167,38 @@ fun LoginActivityScreen() {
                 },
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(46.dp))
 
             Button(
                 onClick = {
-//                    context.startActivity(Intent(context, JobSeekerHomeActivity::class.java))
-//                    context.finish()
+                    when {
+                        email.isBlank() -> {
+                            errorMessage = "Please enter your email."
+                        }
+
+                        password.isBlank() -> {
+                            errorMessage = "Please enter your password."
+                        }
+
+
+                        else -> {
+                            errorMessage = ""
+                            val userData = UserData(
+                                email = email,
+                                password = password
+                            )
+                            fetchUserAccount(userData.email, userData.password, context)
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -223,5 +254,32 @@ fun LoginActivityScreen() {
 @Composable
 fun LoginActivityScreenPreview() {
     LoginActivityScreen()
+}
+
+
+fun fetchUserAccount(userEmail: String, userPassword: String, context: Context) {
+    val database = FirebaseDatabase.getInstance()
+    val databaseReference = database.reference
+
+    val sanitizedEmail = userEmail.replace(".", ",")
+
+    databaseReference.child("UserData").child(sanitizedEmail).get()
+        .addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val userData = snapshot.getValue(UserData::class.java)
+                userData?.let {
+
+                    if (userPassword == it.password) {
+                        Toast.makeText(context, "Login Successfull", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Incorrect Credentials", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(context, "No User Found", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener { exception ->
+            println("Error retrieving data: ${exception.message}")
+        }
 }
 
