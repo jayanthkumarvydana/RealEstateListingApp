@@ -229,6 +229,23 @@ fun LoginActivityScreen() {
         Row(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
+            Text(text = "Lost Password ?", fontSize = 14.sp)
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Reset Now",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black, // Blue text color for "Sign Up"
+                modifier = Modifier.clickable {
+                    context.startActivity(Intent(context, ResetPasswordActivity::class.java))
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
             Text(text = "I'm new to this app !", fontSize = 14.sp)
             Spacer(modifier = Modifier.width(4.dp))
             Text(
