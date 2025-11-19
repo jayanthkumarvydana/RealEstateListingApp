@@ -47,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.database.FirebaseDatabase
+import kotlin.jvm.java
 
 
 class LoginActivity : ComponentActivity() {
@@ -288,6 +289,8 @@ fun fetchUserAccount(userEmail: String, userPassword: String, context: Context) 
 
                     if (userPassword == it.password) {
                         Toast.makeText(context, "Login Successfull", Toast.LENGTH_SHORT).show()
+                        context.startActivity(Intent(context, HomeActivity::class.java))
+                        (context as Activity).finish()
                     } else {
                         Toast.makeText(context, "Incorrect Credentials", Toast.LENGTH_SHORT).show()
                     }
