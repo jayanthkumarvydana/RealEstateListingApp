@@ -72,4 +72,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.firebase.database.ktx)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    implementation(platform("androidx.compose:compose-bom:2025.08.00")) // update BOM version
+    implementation("androidx.compose.material:material")                // core material
+    implementation("androidx.compose.material:material-icons-extended")
 }
