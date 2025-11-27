@@ -44,7 +44,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.res.painterResource
 
 
-class MainActivity2 : ComponentActivity() {
+class PropertyDetails : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
