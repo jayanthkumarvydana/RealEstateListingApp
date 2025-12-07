@@ -1,6 +1,11 @@
 package jayanthkumar.project.realestateapp
 
+import android.R.attr.fontWeight
+import android.R.attr.onClick
+import android.R.attr.text
+import android.app.Activity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -13,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
@@ -41,14 +47,29 @@ import androidx.compose.material.icons.filled.LocalParking
 import androidx.compose.material.icons.filled.Pool
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import jayanthkumar.project.realestateapp.selectedProperty.property
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class PropertyDetails : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ImageCardWithActions("https://cms.ezylegal.in/wp-content/uploads/2022/04/types-of-properties-1.jpg","Ananada Niketan")
+            ImageCardWithActions(selectedProperty.property,onFavClick={
+                val localDb = AppDatabase.getDatabase(this)
+                CoroutineScope(Dispatchers.IO).launch {
+                    localDb.propertyDao().insertProperty(property.toEntity())
+                }
+
+                Toast.makeText(this, "Property saved locally", Toast.LENGTH_SHORT).show()
+
+            }, onBackClick = { (this as Activity).finish() })
         }
     }
 }
@@ -56,13 +77,26 @@ class PropertyDetails : ComponentActivity() {
 
 @Composable
 fun ImageCardWithActions(
-    imageUrl: String,
-    title: String,
+
+    property: Property,
     onBackClick: () -> Unit = {},
     onFavClick: () -> Unit = {},
     onMoreClick: () -> Unit = {}
 ) {
     var selectedChip by remember { mutableStateOf<String?>(null) }
+    var isFavorite by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val db = remember { AppDatabase.getDatabase(context) }
+    val scope = rememberCoroutineScope()
+
+
+    // 🔹 Check if property is already saved in Room
+    LaunchedEffect(property.id) {
+        scope.launch(Dispatchers.IO) {
+            val existing = db.propertyDao().getPropertyById(property.id)
+            isFavorite = existing != null
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -74,8 +108,8 @@ fun ImageCardWithActions(
 
             // Image
             AsyncImage(
-                model = imageUrl,
-                contentDescription = title,
+                model ="https://cms.ezylegal.in/wp-content/uploads/2022/04/types-of-properties-1.jpg" ,
+                contentDescription = "",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -101,17 +135,46 @@ fun ImageCardWithActions(
                 // Right → Fav + 3 dots
                 Row(verticalAlignment = Alignment.CenterVertically) {
 
-                    IconButton(onClick = onFavClick) {
+                    IconButton(
+                        onClick = {
+                            scope.launch(Dispatchers.IO) {
+                                if (isFavorite) {
+                                    //  Remove from DB
+                                    db.propertyDao().deletePropertyById(property.id)
+                                } else {
+                                    // Save to DB
+                                    val entity = PropertyEntity(
+                                        id = property.id,
+                                        propertyName = property.propertyName,
+                                        contact = property.contact,
+                                        description = property.description,
+                                        price = property.price,
+                                        place = property.place,
+                                        beds = property.beds,
+                                        baths = property.baths,
+                                        area = property.area,
+                                        type = property.type,
+                                        amenities = property.amenities.joinToString(", ")
+                                    )
+                                    db.propertyDao().insertProperty(entity)
+                                }
+
+                                // Toggle color on main thread
+                                isFavorite = !isFavorite
+                            }
+                        }
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.FavoriteBorder,
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Favorite",
-                            tint = Color.White
+                            tint = if (isFavorite) Color.Red else Color.White
                         )
                     }
 
+
                     IconButton(onClick = onMoreClick) {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
+                            imageVector = Icons.Default.LocationOn,
                             contentDescription = "More",
                             tint = Color.White
                         )
@@ -140,7 +203,7 @@ fun ImageCardWithActions(
                     Row()
                     {
                         Text(
-                            text = title,
+                            text = property.propertyName,
                             style = MaterialTheme.typography.titleLarge,
                             color = Color.Black,
                             fontWeight = FontWeight.Bold
@@ -148,7 +211,7 @@ fun ImageCardWithActions(
                         Spacer(modifier = Modifier.weight(1f))
 
                         Text(
-                            text = "$350,00",
+                            text = "£${property.price}",
                             style = MaterialTheme.typography.titleLarge,
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
@@ -157,7 +220,7 @@ fun ImageCardWithActions(
 
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Looking for a home that's modern, elegant, and peaceful? Ananda Niketan has the perfect match for you-whether it's your dream residence or a smart investment.",
+                        text = property.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray,
                     )
@@ -169,9 +232,9 @@ fun ImageCardWithActions(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         FeatureChip(
-                            label = "384 Bagbari",
+                            label = property.place,
                             icon = Icons.Default.LocationOn,
-                            isSelected = selectedChip == "384 Bagbari"
+                            isSelected = selectedChip == property.place
                         ) { selectedChip = it }
 
                         FeatureChip(
@@ -222,7 +285,7 @@ fun ImageCardWithActions(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             Text(
-                                text = "1100 sqft",
+                                text = property.area,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Bold
@@ -263,7 +326,7 @@ fun ImageCardWithActions(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             Text(
-                                text = "1 Baths",
+                                text = property.baths,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Bold
@@ -301,7 +364,7 @@ fun ImageCardWithActions(
 
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "Villa",
+                                text = property.type,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Bold,
@@ -331,14 +394,14 @@ fun ImageCardWithActions(
                         shape = RoundedCornerShape(50),
                         border = BorderStroke(2.dp, Color.Gray),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Cyan,
+                            containerColor = Color.LightGray,
                             contentColor = Color.Black
                         ),
                         modifier = Modifier
                             .height(52.dp)
                             .fillMaxWidth()
                     ) {
-                        Text("Curved Border Button")
+                        Text(property.contact)
                     }
 
 
@@ -393,8 +456,22 @@ Spacer(modifier = Modifier.width(6.dp))
 
 
 
+
 @Preview(showBackground = true)
 @Composable
 fun PropertyDetailsPreview() {
-    ImageCardWithActions("https://cms.ezylegal.in/wp-content/uploads/2022/04/types-of-properties-1.jpg","Ananada Niketan")
+    val dummyProperty = Property(
+        id = "P001",
+        propertyName = "Ananda Niketan",
+        contact = "9876543210",
+        description = "A luxurious 3BHK villa located in the heart of Bangalore. Features a private garden, modular kitchen, and modern interiors with great connectivity.",
+        price = "85,00,000",
+        place = "Bangalore",
+        beds = "3",
+        baths = "2",
+        area = "1650 sqft",
+        type = "Villa",
+        amenities = listOf("Wi-Fi", "Parking", "Swimming Pool", "Gym", "Garden")
+    )
+    ImageCardWithActions(property = dummyProperty)
 }

@@ -1,33 +1,28 @@
 package jayanthkumar.project.realestateapp
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,305 +30,218 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.*
+
+
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        FirebaseApp.initializeApp(this)
         setContent {
-            HomeScreen()
+            MaterialTheme {
+                HomeScreen()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen() {
+    val context = LocalContext.current
+    val database = FirebaseDatabase.getInstance().getReference("properties")
+
+    var propertyList by remember { mutableStateOf<List<Property>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    // 🔹 Fetch properties from Firebase
+    LaunchedEffect(Unit) {
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Property>()
+                for (child in snapshot.children) {
+                    val property = child.getValue(Property::class.java)
+                    if (property != null) {
+                        list.add(property)
+                    }
+                }
+                propertyList = list
+                isLoading = false
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error: ${error.message}")
+                isLoading = false
+            }
+        })
+    }
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    // Navigate to AddProperty screen
+                    val intent = Intent(context, AddPropertyActivity::class.java)
+                    context.startActivity(intent)
+                },
+                containerColor = colorResource(id = R.color.white), // ✅ Custom color from resources
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Property", tint = Color.Black)
+            }
+        }
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(innerPadding)
+        ) {
+            // Top Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = colorResource(id = R.color.Brown))
+                    .padding(vertical = 10.dp, horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Image(
+                    painter = painterResource(id = R.drawable.profile),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(34.dp)
+
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                Text(
+                    text = "Real Estate App",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Image(
+                    painter = painterResource(id = R.drawable.save),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(38.dp)
+                        .clickable{
+                            val intent = Intent(context, SavedPropertiesActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Loading or Data
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (propertyList.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No properties found.\nClick + to add one!",
+                        textAlign = TextAlign.Center,
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(propertyList) { property ->
+                        PropertyCard(property)
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun HomeScreen()
-{
-    Column(
+fun PropertyCardOld(property: Property) {
+    Card(
         modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    )
-    {
+            .fillMaxWidth()
+            .clickable { }
+            .padding(horizontal = 8.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = colorResource(id = R.color.Brown))
-                .padding(vertical = 6.dp, horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        )
-        {
+            // Image placeholder (you can later replace with image URL)
+            Image(
+                painter = painterResource(id = R.drawable.image_one),
+                contentDescription = property.propertyName,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Real Estate App",
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
+                text = property.propertyName,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            Image(
-                painter = painterResource(id = R.drawable.ic_realestate),
-                contentDescription = "Real Estate App",
-                modifier = Modifier
-                    .size(44.dp)
-                    .padding(start = 8.dp)
-            )
-
-
-
-        }
-
-
-        Card(
-            modifier = Modifier
-                .padding(8.dp),
-            elevation = CardDefaults.cardElevation(4.dp),
-        )
-        {
-            Column(
-                modifier = Modifier.fillMaxSize()
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
             ) {
+                Text(text = "💰 ${property.price}", fontSize = 16.sp, color = Color(0xFF2E7D32))
+                Text(text = "📍 ${property.place}", fontSize = 16.sp)
+            }
 
-                Image(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    painter = painterResource(id = R.drawable.image_one),
+            Spacer(modifier = Modifier.height(6.dp))
 
-                    contentDescription = "Place Image",
-                    contentScale = ContentScale.FillBounds
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(text = "🛏 ${property.beds} Beds", fontSize = 14.sp)
+                Text(text = "🛁 ${property.baths} Baths", fontSize = 14.sp)
+            }
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-                Text(
-                    text = "The Green House",
-                    color = Color.Black,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(start = 12.dp)
+            Text(text = "🏠 ${property.area}  |  ${property.type}", fontSize = 14.sp, color = Color.Gray)
 
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Image(
-                        modifier = Modifier
-                            .size(16.dp),
-                        painter = painterResource(id = R.drawable.location),
-                        contentDescription = "RealEstate"
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Text(
-                        text = "Location",
-                        color = Color.Black,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-
-                    )
+            if (property.amenities.isNotEmpty()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    property.amenities.take(3).forEach {
+                        Surface(
+                            color = Color(0xFFE3F2FD),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = it,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                color = Color(0xFF1565C0),
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Image(
-                        modifier = Modifier
-                            .size(16.dp),
-                        painter = painterResource(id = R.drawable.area),
-                        contentDescription = "Opening Hours Icon"
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Text(
-                        text = "Area",
-                        color = Color.Black,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Image(
-                        modifier = Modifier
-                            .size(16.dp),
-                        painter = painterResource(id = R.drawable.price),
-                        contentDescription = "Opening Hours Icon"
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Text(
-                        text = "Price",
-                        color = Color.Black,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-
-
             }
         }
-
-
-        Card(
-            modifier = Modifier
-                .padding(8.dp),
-            elevation = CardDefaults.cardElevation(4.dp),
-        )
-        {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-
-                Image(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    painter = painterResource(id = R.drawable.image_one),
-
-                    contentDescription = "Place Image",
-                    contentScale = ContentScale.FillBounds
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "The Green House",
-                    color = Color.Black,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Image(
-                        modifier = Modifier
-                            .size(16.dp),
-                        painter = painterResource(id = R.drawable.location),
-                        contentDescription = ""
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Text(
-                        text = "Location",
-                        color = Color.Black,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Image(
-                        modifier = Modifier
-                            .size(16.dp),
-                        painter = painterResource(id = R.drawable.area),
-                        contentDescription = "Opening Hours Icon"
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Text(
-                        text = "Area",
-                        color = Color.Black,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Image(
-                        modifier = Modifier
-                            .size(16.dp),
-                        painter = painterResource(id = R.drawable.price),
-                        contentDescription = "Opening Hours Icon"
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Text(
-                        text = "Price",
-                        color = Color.Black,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-
-            }
-        }
-        
     }
-
 }
-
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview() {
-    HomeScreen()
+fun PreviewHomeScreen() {
+    MaterialTheme {
+        HomeScreen()
+    }
 }
