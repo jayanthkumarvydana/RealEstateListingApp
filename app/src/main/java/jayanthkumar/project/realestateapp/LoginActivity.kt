@@ -47,7 +47,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.database.FirebaseDatabase
-import kotlin.jvm.java
 
 
 class LoginActivity : ComponentActivity() {
@@ -288,6 +287,11 @@ fun fetchUserAccount(userEmail: String, userPassword: String, context: Context) 
                 userData?.let {
 
                     if (userPassword == it.password) {
+
+                        UserPrefs.markLoginStatus(context = context, true)
+                        UserPrefs.saveEmail(context, email = userData.email)
+                        UserPrefs.saveName(context, userData.fullName)
+
                         Toast.makeText(context, "Login Successfull", Toast.LENGTH_SHORT).show()
                         context.startActivity(Intent(context, HomeActivity::class.java))
                         (context as Activity).finish()

@@ -382,3 +382,8 @@ fun AddPropertyPreview() {
         AddProperty()
     }
 }
+
+//in this screen , give an option to select the property location on the google maps
+//and also give option to select the property image from gallery and upload the image to imgbb and save the url in firebase realtime database
+//
+//give the complte code
