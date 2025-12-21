@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.LocationSearching
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -164,12 +165,9 @@ fun CreateAccountActivityScreen() {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Spacer(modifier = Modifier.width(6.dp))
 
-                        Image(
-                            modifier = Modifier
-                                .width(24.dp)
-                                .height(24.dp),
-                            painter = painterResource(id = R.drawable.ic_realestate),
-                            contentDescription = "Real Estate",
+                        Icon(
+                            imageVector = Icons.Default.LocationSearching, // Replace with desired icon
+                            contentDescription = "ZipCode Icon"
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Spacer(

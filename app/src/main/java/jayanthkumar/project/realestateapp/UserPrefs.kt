@@ -9,8 +9,8 @@ object UserPrefs {
     private const val KEY_IS_USER_LOGGED_IN = "KEY_IS_USER_LOGGED_IN"
     private const val KEY_NAME = "KEY_NAME"
     private const val KEY_EMAIL = "KEY_EMAIL"
-    private const val KEY_ROLE = "KEY_ROLE"
-    private const val KEY_ID= "KEY_ID"
+    private const val KEY_ZIPCODE = "KEY_ZIPCODE"
+
 
     fun markLoginStatus(context: Context, isLoggedIn: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -42,23 +42,14 @@ object UserPrefs {
         return prefs.getString(KEY_EMAIL, "") ?: ""
     }
 
-    fun saveRole(context: Context, role: String) {
+    fun saveZipCode(context: Context, role: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_ROLE, role).apply()
+        prefs.edit().putString(KEY_ZIPCODE, role).apply()
     }
 
-    fun getRole(context: Context): String {
+    fun getZipCode(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_ROLE, "") ?: ""
+        return prefs.getString(KEY_ZIPCODE, "") ?: ""
     }
 
-    fun saveID(context: Context, role: String) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_ID, role).apply()
-    }
-
-    fun getID(context: Context): String {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_ID, "") ?: ""
-    }
 }

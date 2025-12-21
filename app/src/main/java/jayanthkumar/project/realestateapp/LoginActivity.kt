@@ -291,6 +291,7 @@ fun fetchUserAccount(userEmail: String, userPassword: String, context: Context) 
                         UserPrefs.markLoginStatus(context = context, true)
                         UserPrefs.saveEmail(context, email = userData.email)
                         UserPrefs.saveName(context, userData.fullName)
+                        UserPrefs.saveZipCode(context,userData.zipCode)
 
                         Toast.makeText(context, "Login Successfull", Toast.LENGTH_SHORT).show()
                         context.startActivity(Intent(context, HomeActivity::class.java))
