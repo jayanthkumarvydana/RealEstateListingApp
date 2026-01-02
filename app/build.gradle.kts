@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "jayanthkumar.project.realestateapp"
+    namespace = "app.s3397892jayanthkumar.realestate"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "jayanthkumar.project.realestateapp"
+        applicationId = "app.s3397892jayanthkumar.realestate"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

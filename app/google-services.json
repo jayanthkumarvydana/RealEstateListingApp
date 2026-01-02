@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "18543212323",
+    "firebase_url": "https://realestateapp-902f8-default-rtdb.firebaseio.com",
     "project_id": "realestateapp-902f8",
     "storage_bucket": "realestateapp-902f8.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:18543212323:android:df36fd45734e43c97f3e96",
+        "mobilesdk_app_id": "1:18543212323:android:d914e20481404cce7f3e96",
         "android_client_info": {
-          "package_name": "jayanthkumar.project.realestateapp"
+          "package_name": "app.s3397892jayanthkumar.realestate"
         }
       },
       "oauth_client": [],
